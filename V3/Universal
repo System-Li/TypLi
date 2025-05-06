@@ -1,0 +1,114 @@
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Konfiguration
+local KEY_URL = "https://pastebin.com/raw/cFsCBC9E" -- Link zur Keyliste
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1369417333558214788/t_E50bUVZ00nzzdfIEqOkduyo0ahHyIaiX5udg5gqgCW00vjAv6_M0odC8FSDvP9FTJY"
+
+-- GUI für Keyeingabe
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0.4, 0, 0.3, 0)
+frame.Position = UDim2.new(0.3, 0, 0.35, 0)
+frame.BackgroundColor3 = Color3.new(0, 0, 0)
+
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(0.8, 0, 0.2, 0)
+box.Position = UDim2.new(0.1, 0, 0.2, 0)
+box.PlaceholderText = "Key eingeben"
+box.TextColor3 = Color3.new(0, 0, 0)
+
+local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(0.8, 0, 0.2, 0)
+btn.Position = UDim2.new(0.1, 0, 0.6, 0)
+btn.Text = "CheckKey"
+btn.BackgroundColor3 = Color3.new(0, 1, 0)
+btn.TextColor3 = Color3.new(0, 0, 0)
+
+-- Logging an Discord
+local function sendLogToDiscord(username, userid, key)
+    local data = {
+        ["content"] = "",
+        ["embeds"] = {{
+            ["title"] = "🔐 Key Login",
+            ["description"] = "**User:** " .. username .. "\n**UserId:** " .. userid .. "\n**Key:** `" .. key .. "`",
+            ["color"] = 65280,
+            ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
+        }}
+    }
+    local success, err = pcall(function()
+        HttpService:PostAsync(
+            WEBHOOK_URL,
+            HttpService:JSONEncode(data),
+            Enum.HttpContentType.ApplicationJson
+        )
+    end)
+    if not success then warn("Fehler beim Senden an Discord: " .. tostring(err)) end
+end
+
+-- Zweites UI
+local function createSecondUI()
+    local sgui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+    local frm = Instance.new("Frame", sgui)
+    frm.Size = UDim2.new(0.4, 0, 0.3, 0)
+    frm.Position = UDim2.new(0.3, 0, 0.35, 0)
+    frm.BackgroundColor3 = Color3.new(0, 0, 0)
+
+    local function addButton(txt, pos, callback)
+        local b = Instance.new("TextButton", frm)
+        b.Size = UDim2.new(0.8, 0, 0.2, 0)
+        b.Position = pos
+        b.Text = txt
+        b.BackgroundColor3 = Color3.new(0, 1, 0)
+        b.TextColor3 = Color3.new(0, 0, 0)
+        b.MouseButton1Click:Connect(function()
+            callback()
+            sgui:Destroy()
+        end)
+    end
+
+    -- Zap Hub PS99 (2 Scripts gleichzeitig)
+    addButton("Zap Hub PS99", UDim2.new(0.1, 0, 0.1, 0), function()
+        spawn(function()
+            loadstring(game:HttpGet('https://zaphub.xyz/Exec'))()
+        end)
+        spawn(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/System-Li/Banana-Hub./refs/heads/main/V3"))()
+        end)
+    end)
+
+    -- VRT BGSI/Pet GO
+    addButton("VRT BGSI/Pet GO", UDim2.new(0.1, 0, 0.4, 0), function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/System-Li/VRT/refs/heads/main/V3"))()
+    end)
+
+    -- Pet GO
+    addButton("Pet GO", UDim2.new(0.1, 0, 0.7, 0), function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/System-Li/VRT/refs/heads/main/V3"))()
+    end)
+end
+
+-- Keyprüfung
+btn.MouseButton1Click:Connect(function()
+    local entered = box.Text
+    if entered == "" then return end
+
+    local success, response = pcall(function()
+        return game:HttpGet(KEY_URL)
+    end)
+
+    if success then
+        for key in string.gmatch(response, "[^\r\n]+") do
+            if entered == key then
+                gui:Destroy()
+                sendLogToDiscord(player.Name, player.UserId, key)
+                createSecondUI()
+                return
+            end
+        end
+        warn("Ungültiger Key!")
+    else
+        warn("Fehler beim Laden der Keyliste!")
+    end
+end)
