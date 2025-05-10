@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 -- Konfiguration
-local KEY_URL = "https://pastebin.com/raw/cFsCBC9E" -- Link zur Keyliste
+local KEY_URL = "https://pastebin.com/mm0tKvvJ" -- Link zur Keyliste
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1369417333558214788/t_E50bUVZ00nzzdfIEqOkduyo0ahHyIaiX5udg5gqgCW00vjAv6_M0odC8FSDvP9FTJY"
 
 -- GUI für Keyeingabe
